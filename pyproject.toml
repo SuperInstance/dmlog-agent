@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dmlog-agent"
-version = "0.1.0"
+version = "0.2.0"
 description = "Agent framework for D&D and tabletop RPG campaign management"
 readme = "README.md"
 license = "MIT"
@@ -31,3 +31,4 @@ Issues = "https://github.com/SuperInstance/dmlog-agent/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["dmlog_agent"]
+dependencies = ["domain-agent-base @ git+https://github.com/SuperInstance/domain-agent-base.git"]
