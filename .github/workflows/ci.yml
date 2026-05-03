@@ -1,0 +1,28 @@
+name: CI
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify README exists and is substantial
+        run: |
+          if [ ! -f README.md ]; then echo "::error::No README.md"; exit 1; fi
+          lines=$(wc -l < README.md)
+          if [ "$lines" -lt 5 ]; then echo "::warning::README is very short ($lines lines)"; fi
+          echo "README.md: $lines lines ✓"
+      - name: Check for HTTP (non-HTTPS) links
+        run: |
+          if [ -f README.md ]; then
+            http_links=$(grep -n "http://" README.md || true)
+            if [ -n "$http_links" ]; then
+              echo "::warning::Found HTTP links (should be HTTPS):"
+              echo "$http_links"
+            else
+              echo "No insecure HTTP links found ✓"
+            fi
+          fi
