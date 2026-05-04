@@ -6,6 +6,9 @@ and campaign management for tabletop RPG campaigns.
 Integrates with the PLATO memory layer for persistent world state.
 """
 
+from fleet_agent import BaseAgent
+from fleet_agent.fleet_math import EmergenceDetector, HolonomyConsensus
+
 from dataclasses import dataclass, field
 from datetime import datetime, date
 from enum import Enum
@@ -25,7 +28,6 @@ __all__ = [
     "EncounterDifficulty",
 ]
 
-
 class CreatureType(Enum):
     """D&D creature types."""
     Aberration = "aberration"
@@ -43,7 +45,6 @@ class CreatureType(Enum):
     Plant = "plant"
     Undead = "undead"
 
-
 class Alignment(Enum):
     """D&D alignment grid."""
     LawfulGood = "lawful good"
@@ -57,7 +58,6 @@ class Alignment(Enum):
     ChaoticEvil = "chaotic evil"
     Unaligned = "unaligned"
 
-
 class EncounterDifficulty(Enum):
     """Encounter difficulty rating."""
     Trivial = "trivial"       # Easy
@@ -65,7 +65,6 @@ class EncounterDifficulty(Enum):
     Medium = "medium"
     Hard = "hard"
     Deadly = "deadly"         # 5e XP thresholds used as reference
-
 
 @dataclass
 class NPC:
@@ -131,7 +130,6 @@ class NPC:
             data["alignment"] = Alignment(data["alignment"])
         return cls(**data)
 
-
 @dataclass
 class Faction:
     """A faction or organization within the campaign."""
@@ -164,7 +162,6 @@ class Faction:
     def from_dict(cls, data: dict) -> "Faction":
         return cls(**data)
 
-
 @dataclass
 class Location:
     """A named location in the campaign world."""
@@ -194,7 +191,6 @@ class Location:
     @classmethod
     def from_dict(cls, data: dict) -> "Location":
         return cls(**data)
-
 
 @dataclass
 class Encounter:
@@ -255,7 +251,6 @@ class Encounter:
         data = data.copy()
         data["difficulty"] = EncounterDifficulty(data["difficulty"])
         return cls(**data)
-
 
 @dataclass
 class SessionNote:
@@ -324,7 +319,6 @@ class SessionNote:
         data["encounters"] = [Encounter.from_dict(e) for e in data.get("encounters", [])]
         return cls(**data)
 
-
 class DMLogAgent:
     """
     Agent for managing tabletop RPG campaigns.
@@ -341,13 +335,24 @@ class DMLogAgent:
         stats = agent.get_campaign_stats()
     """
 
-    def __init__(self, Plato_URL: str = "http://localhost:8847"):
-        self.plato_url = Plato_URL
-        self.npcs: list[NPC] = []
-        self.factions: list[Faction] = []
-        self.locations: list[Location] = []
-        self.sessions: list[SessionNote] = []
-        self._session_counter = 0
+        
+    def detect_emergence(self, events: list) -> dict:
+        """Detect emergence via H1 cohomology."""
+        detector = EmergenceDetector()
+        edges = [(events[i], events[i+1]) for i in range(len(events)-1)]
+        detector.update(events, edges)
+        return {"emergence_detected": detector.emergence_detected, "h1_cohomology": detector.h1, "confidence": detector.confidence}
+
+    def check_consensus(self, tile_ids: list[int]) -> bool:
+        """Check holonomy consensus across tiles."""
+        hc = HolonomyConsensus()
+        for tid in tile_ids:
+            hc.add_tile(tid)
+        return hc.check_consensus([tile_ids])
+
+def __init__(self, vessel: str = "dmlog-agent", domain: str = DMLOG_AI_ROOM, plato_url: str = "http://localhost:8847"):
+        super().__init__(vessel=vessel, domain=domain, plato_url=plato_url)
+        self.room = domain
 
     def add_npc(
         self,

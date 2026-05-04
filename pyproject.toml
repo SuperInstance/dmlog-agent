@@ -29,6 +29,10 @@ Documentation = "https://github.com/SuperInstance/dmlog-agent"
 Repository = "https://github.com/SuperInstance/dmlog-agent"
 Issues = "https://github.com/SuperInstance/dmlog-agent/issues"
 
+dependencies = [
+    "fleet-agent>=0.2.0",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["dmlog_agent"]
 dependencies = ["domain-agent-base @ git+https://github.com/SuperInstance/domain-agent-base.git"]
